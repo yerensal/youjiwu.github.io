@@ -72,6 +72,9 @@
             invincible: false, invincibleTimer: 0
         };
 
+        // ⭐ 新增：记录初始命数（氪金后改为 3）
+        let startingLives = 1;
+
         const monster = { x: 0, y: 230, w: 72, h: 96, speed: 1.2, gravityDir: 1, vy: 0 };
         let bullets = [], smallMonsters = [], cameraX = 0, distance = 0, coinCount = 0;
         let powerupCount = 0;
@@ -217,8 +220,6 @@
             groundPlatform.x = 0; topGroundPlatform.x = 0;
             player.gravityDir = 1; player.vy = 0; player.shootCooldown = 0; player.frameCounter = 0;
             player.x = 120; player.y = 270; player.vx = 0; player.vy = 0; player.jumpCount = 0; player.onGround = false;
-            player.lives = 1;
-            player.maxLives = 3;
             player.invincible = false; player.invincibleTimer = 0;
             cameraX = 0; distance = 0;
             let lastX = 600; for (let i = 0; i < 35; i++) { lastX = generateObstacleChunk(lastX); } lastGeneratedX = lastX; shakeAmount = 0;
@@ -253,7 +254,7 @@
         window.addEventListener("keyup", e => { keys[e.code] = false; });
 
         // ============================================================
-        // Canvas 点击/触摸（全部按钮定位已修正）
+        // Canvas 点击/触摸
         // ============================================================
         canvas.addEventListener("mousedown", (ev) => {
             const rect = canvas.getBoundingClientRect();
@@ -270,6 +271,8 @@
                     return;
                 }
                 if (mx >= 250 && mx <= 550 && my >= 230 && my <= 280) {
+                    // ⭐ 氪金：把初始命数改为 3
+                    startingLives = 3;
                     player.lives = 3;
                     showModal = false;
                     gameState = "home";
@@ -351,6 +354,8 @@
                     return;
                 }
                 if (mx >= 250 && mx <= 550 && my >= 230 && my <= 280) {
+                    // ⭐ 氪金：把初始命数改为 3
+                    startingLives = 3;
                     player.lives = 3;
                     showModal = false;
                     gameState = "home";
@@ -412,10 +417,11 @@
             }
         });
 
+        // ⭐ 修改 resetGame：使用 startingLives 作为初始命数
         function resetGame() {
             player.x = 120; player.y = 270; player.vx = 0; player.vy = 0; player.jumpCount = 0; player.onGround = false;
             player.gravityDir = 1; player.shootCooldown = 0; player.frameCounter = 0;
-            player.lives = 1;
+            player.lives = startingLives;   // 不再写死为 1，而是读取氪金后的值
             player.maxLives = 3;
             player.invincible = false; player.invincibleTimer = 0;
             cameraX = 0; distance = 0; coinCount = 0; powerupCount = 0; shakeAmount = 0;
@@ -568,7 +574,6 @@
                                 maxTimer: 120
                             });
                         } else if (p.type === 'star') {
-                            // 面包：特效全触发，加血仅当未满
                             coinCount += 20;
                             powerupCount++;
                             emitParticles(p.x + p.w / 2, p.y + p.h / 2, '#44aaff', 30);
@@ -592,7 +597,7 @@
                     }
                 }
 
-                // ----- 生成道具（每千米，两个，间隔≥200米）-----
+                // ----- 生成道具 -----
                 const POWERUP_SIZE = 32;
                 const zone = Math.floor(cameraX / 10000);
                 if (!spawnedZones.has(zone) && cameraX > 500) {
@@ -710,7 +715,7 @@
                 ctx.shadowColor = "rgba(255,0,0,0.2)"; ctx.shadowBlur = 40;
                 ctx.fillStyle = "rgba(30,10,20,0.7)"; ctx.beginPath(); ctx.roundRect(100, 60, 600, 280, 20); ctx.fill(); ctx.shadowBlur = 0;
                 ctx.strokeStyle = "rgba(255,215,0,0.2)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(100, 60, 600, 280, 20); ctx.stroke();
-                ctx.fillStyle = "#ff6b6b"; ctx.font = "bold 36px monospace"; ctx.textAlign = "center"; ctx.shadowColor = "rgba(255,100,100,0.4)"; ctx.shadowBlur = 30; ctx.fillText("💔 游戏结束", canvas.width / 2, 120); ctx.shadowBlur = 0;
+                ctx.fillStyle = "#ff6b6b"; ctx.font = "bold 36px monospace"; ctx.textAlign = "center"; ctx.shadowColor = "rgba(255,100,100,0.4)"; ctx.shadowBlur = 30; ctx.fillText("💔 要被邪恶同人女抓去写寡妇文了", canvas.width / 2, 120); ctx.shadowBlur = 0;
                 ctx.fillStyle = "#ffffff"; ctx.font = "22px monospace"; ctx.fillText(`🏃 距离：${deathSnapshot.dist} m`, canvas.width / 2, 170);
                 ctx.fillText(`🪙 金币：${deathSnapshot.coins} 枚`, canvas.width / 2, 200);
                 ctx.fillText(`⭐ 道具：${deathSnapshot.powerups} 个`, canvas.width / 2, 230);
